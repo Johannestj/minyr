@@ -1,52 +1,63 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"os"
-	"log"
-	"io"
 	"strings"
-	"github.com/uia-worker/misc/conv"
-)	
+
+	"github.com/Johannestj/minyr/yr"
+)
 
 func main() {
-	src, err := os.Open("table.csv")
-	//src, err := os.Open("/home/janisg/minyr/kjevik-temp-celsius-20220318-20230318.csv")
-	if err != nil {
-        	log.Fatal(err)
+	// Venter på at brukeren skal skrive inn "minyr"
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Skriv inn 'minyr' for å starte programmet: ")
+	text, _ := reader.ReadString('\n')
+	if strings.ToLower(strings.TrimSpace(text)) != "minyr" {
+		fmt.Println("Ugyldig verdi.")
+		return
 	}
-	defer src.Close()
-        log.Println(src)
-        
-	
-	var buffer []byte
-	var linebuf []byte // nil
-	buffer = make([]byte, 1)
-        bytesCount := 0
-	for {
-		_, err := src.Read(buffer)
-		if err != nil && err != io.EOF {
-			log.Fatal(err)
-		}
 
-		bytesCount++
-		//log.Printf("%c ", buffer[:n])
-		if buffer[0] == 0x0A {
-	           log.Println(string(linebuf))
-		   // Her
-		   elementArray := strings.Split(string(linebuf), ";")
-		   if len(elementArray) > 3 {
-			 celsius := elementArray[3]
-			 fahr := conv.CelsiusToFahrenheit(celsius)
-		         log.Println(elementArray[3])
-	   	   }
-                   linebuf = nil		   
-		} else {
-                   linebuf = append(linebuf, buffer[0])
-		}	
-		//log.Println(string(linebuf))
-		if err == io.EOF {
+	// Viser brukeren en meny med valg
+	fmt.Println("Valg:")
+	fmt.Println("  - 'convert' for å konvertere tempraturen fra Celsius til Fahrenheit")
+	fmt.Println("  - 'average' for å begregne gjennomsnitt tempratur for perioden")
+	fmt.Println("Skriv 'q' eller 'quit' for å avbryte.")
+	for {
+		fmt.Print("Velg: ")
+		option, _ := reader.ReadString('\n')
+		option = strings.ToLower(strings.TrimSpace(option))
+
+		if option == "convert" {
+			err := yr.Convert()
+			if err != nil {
+				fmt.Println("Feil med begregning av gjennomsnitt tempratur:", err)
+				return
+			}
+			fmt.Println("Gjennomsnitt begregning fullført.")
 			break
 		}
-	}
 
+		if option == "average" {
+			fmt.Print("Velg enhet for begregning ('c' for Celsius eller 'f' for Fahrenheit): ")
+			unit, _ := reader.ReadString('\n')
+			unit = strings.ToLower(strings.TrimSpace(unit))
+
+			avg, err := yr.Average(unit)
+			if err != nil {
+				fmt.Println("Feil under kalkulasjon:", err)
+				return
+			}
+			fmt.Printf("Gjennomsnittlig tempratur: %.2f %s\n", avg, unit)
+			break
+		}
+
+		if option == "q" || option == "Q" || option == "quit" || option == "Quit" {
+			fmt.Println("Avbryt program.")
+			return
+		}
+
+		fmt.Println("Ugylid verdi, prøv igjen.")
+	}
 }
