@@ -9,12 +9,11 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"github.com/Johannestj/funtemps/conv"
 	)
 
 // konverterer temperatur fra Celsius til Fahrenheit
-func celsiusToFahrenheit(celsius float64) float64 {
-	return celsius*1.8 + 32
-}
+
 
 func Convert() error {
 	// Sjekker om output filen eksisterer
@@ -93,7 +92,7 @@ func Convert() error {
 
 		// Konverterer Celsius til Fahrenheit
 		// fahrenheit := conv.CelsiusToFarenheit(lastDigit) //
-		fahrenheit := celsiusToFahrenheit(lastDigit)
+		fahrenheit := conv.CelsiusToFahrenheit(lastDigit)
 
 		// Skriver output til CSV filen
 		fields[3] = fmt.Sprintf("%.1f", fahrenheit)
@@ -129,7 +128,7 @@ func Average(unit string) (float64, error) {
 		tempColumn = 3
 		delimiter = ','
 	} else {
-		return 0, fmt.Errorf("ugyldig verdi: %s", unit)
+		return 0, fmt.Errorf("Ugyldig verdi: %s", unit)
 	}
 
 	file, err := os.Open(filename)
@@ -160,7 +159,7 @@ func Average(unit string) (float64, error) {
 		}
 
 		if len(record) <= tempColumn {
-			return 0, fmt.Errorf("ugyldig data i filen %s", filename)
+			return 0, fmt.Errorf("Ugyldig data i filen %s", filename)
 		}
 
 		temp, err := strconv.ParseFloat(record[tempColumn], 64)
@@ -173,7 +172,7 @@ func Average(unit string) (float64, error) {
 	}
 
 	if count == 0 {
-		return 0, fmt.Errorf("ingen tempratur ble funnet i filen %s", filename)
+		return 0, fmt.Errorf("Ingen tempratur ble funnet i filen %s", filename)
 	}
 
 	return total / float64(count), nil
